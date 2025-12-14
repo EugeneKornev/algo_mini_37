@@ -1,4 +1,8 @@
 from itertools import permutations
+from math import factorial
+from functools import cache
+
+fact = cache(factorial)
 
 def count_top_sort(edges):
     N = len(edges) + 1
@@ -38,7 +42,39 @@ def naive_count_top_sort(edges):
             count += 1
 
     return count
-        
+
+
+def polynom_top_sort(edges):
+    N = len(edges) + 1
+    size = [0] * N
+    top_sorts = [0] * N
+    in_degree = [0] * N
+    children = [[] for _ in range(N)]
+    for u, v in edges:
+        in_degree[v] += 1
+        children[u].append(v)
+    root = float("inf")
+    for v in range(N):
+        if in_degree[v] == 0:
+            root = v
+            break
+
+
+    def dfs(u):
+        size[u] = 1
+        top_sorts[u] = 1
+        for v in children[u]:
+            dfs(v)
+            size[u] += size[v]
+        total = size[u] - 1
+        for v in children[u]:
+            top_sorts[u] *= top_sorts[v]
+            top_sorts[u] *= fact(total) // (fact(size[v]) * fact(total - size[v]))
+            total -= size[v]
+            
+    dfs(root)
+    return top_sorts[root]
+    
     
 def test1():
     edges = []
@@ -68,6 +104,34 @@ def test7():
     edges = [(0, 1), (0, 2), (0, 6), (2, 3), (3, 4), (3, 5), (6, 7), (7, 8), (7, 9), (8, 10)]
     assert count_top_sort(edges) == naive_count_top_sort(edges)
 
+def test8():
+    edges = []
+    assert polynom_top_sort(edges) == naive_count_top_sort(edges)
+
+def test9():
+    edges = [(0, 1)]
+    assert polynom_top_sort(edges) == naive_count_top_sort(edges)
+
+def test10():
+    edges = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5), (5, 6)]
+    assert polynom_top_sort(edges) == naive_count_top_sort(edges)
+
+def test11():
+    edges = [(0, 1), (0, 2)]
+    assert polynom_top_sort(edges) == naive_count_top_sort(edges)
+
+def test12():
+    edges = [(0, 1), (0, 2), (0, 3)]
+    assert polynom_top_sort(edges) == naive_count_top_sort(edges)
+
+def test13():
+    edges = [(0, 1), (0, 4), (0, 7), (1, 2), (1, 3), (4, 5), (4, 6)]
+    assert polynom_top_sort(edges) == naive_count_top_sort(edges)
+
+def test14():
+    edges = [(0, 1), (0, 2), (0, 6), (2, 3), (3, 4), (3, 5), (6, 7), (7, 8), (7, 9), (8, 10)]
+    assert polynom_top_sort(edges) == naive_count_top_sort(edges)
+
 
 if __name__ == "__main__":
     test1()
@@ -84,4 +148,18 @@ if __name__ == "__main__":
     print("Test 6: \u2713")
     test7()
     print("Test 7: \u2713")
+    test8()
+    print("Test 8: \u2713")
+    test9()
+    print("Test 9: \u2713")
+    test10()
+    print("Test 10: \u2713")
+    test11()
+    print("Test 11: \u2713")
+    test12()
+    print('Test 12: \u2713')
+    test13()
+    print("Test 13: \u2713")
+    test14()
+    print("Test 14: \u2713")
     print("All tests passed")
